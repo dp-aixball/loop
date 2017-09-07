@@ -76,6 +76,7 @@ class NpzFolder(data.Dataset):
     def __init__(self, root):
         self.root = root
         self.npzs = self.make_dataset(self.root)
+        self.npz_code2phone = self.root + '/../code2phone.npz'
 
         if len(self.npzs) == 0:
             raise(RuntimeError("Found 0 npz in subfolders of: " + root + "\n"
@@ -89,7 +90,7 @@ class NpzFolder(data.Dataset):
         self.speakers.sort()
         self.speakers = {v: i for i, v in enumerate(self.speakers)}
 
-        code2phone = np.load(self.npzs[0])['code2phone']
+        code2phone = np.load(self.npz_code2phone)['code2phone']
         self.dict = {v: k for k, v in enumerate(code2phone)}
 
     def __getitem__(self, index):
@@ -112,10 +113,20 @@ class NpzFolder(data.Dataset):
 
         return images
 
+    def phone2code(self,txt):
+        st = txt.tostring()
+        st = st.replace('*', ' * ')
+        st = st.replace(':', ' : ')
+        st = st.replace('|', ' | ')
+        st = st.split()
+        out = [ self.dict[x] for x in st]
+        return np.array(out)
+        pass
     def loader(self, path):
         feat = np.load(path)
 
-        txt = feat['phonemes'].astype('int64')
+        txt = self.phone2code(feat['text'])
+        txt = txt.astype(np.int64)
         txt = torch.from_numpy(txt)
 
         audio = feat['audio_features']

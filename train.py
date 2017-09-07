@@ -46,9 +46,9 @@ parser.add_argument('--clip-grad', type=float, default=0.5,
 parser.add_argument('--ignore-grad', type=float, default=10000.0,
                     help='ignore grad before clipping')
 # Model options
-parser.add_argument('--vocabulary-size', type=int, default=44,
+parser.add_argument('--vocabulary-size', type=int, default=200,
                     help='Vocabulary size')
-parser.add_argument('--output-size', type=int, default=63,
+parser.add_argument('--output-size', type=int, default=67,
                     help='Size of decoder output vector')
 parser.add_argument('--hidden-size', type=int, default=256,
                     help='Hidden layer size')
