@@ -21,6 +21,7 @@ from utils import generate_merlin_wav
 
 parser = argparse.ArgumentParser(description='PyTorch Phonological Loop \
                                     Generation')
+parser.add_argument('--dict', type=str, required=True, help='code2phone.npz file name')
 parser.add_argument('--npz', type=str, default='',
                     help='Dataset sample to generate.')
 parser.add_argument('--text', default='',
@@ -39,7 +40,7 @@ if args.gpu >= 0:
     torch.cuda.set_device(args.gpu)
 
 
-def text2phone(text, char2code):
+def text2phone_(text, char2code):
     cmudict = nltk.corpus.cmudict.dict()
 
     result = []
@@ -50,6 +51,21 @@ def text2phone(text, char2code):
 
     return torch.LongTensor(result)
 
+code2phone = np.load(args.dict)['code2phone']
+char2code_dict = {v : k for k, v in enumerate(code2phone)}
+print(code2phone)
+print(char2code_dict)
+
+def text2phone(text, char2code):
+    text = text.replace(' ','|')
+    text = text.replace('|',' | ')
+    text = text.replace('*',' * ')
+    text = text.replace(':',' : ')
+    print(text)
+    result = text.split()
+    print(result)
+    result = [char2code_dict[ph] for ph in result]
+    return torch.LongTensor(result)
 
 def trim_pred(out, attn):
     tq = attn.abs().sum(1).data
@@ -64,9 +80,19 @@ def trim_pred(out, attn):
 
 
 def npy_loader_phonemes(path):
+    npz_code2phone = os.path.dirname(path) + '/../code2phone.npz'
+    code2phone = np.load(npz_code2phone)['code2phone']
+    dicts = {v: k for k, v in enumerate(code2phone)}
     feat = np.load(path)
 
-    txt = feat['phonemes'].astype('int64')
+    txt = feat['text']
+    st = txt.tostring()
+    st = st.replace('*', ' * ')
+    st = st.replace(':', ' : ')
+    st = st.replace('|', ' | ')
+    st = st.split()
+    out = [ dicts[x] for x in st]
+    txt = np.array(out).astype('int64')
     txt = torch.from_numpy(txt)
 
     audio = feat['audio_features']
@@ -85,7 +111,7 @@ def main():
     char2code = train_dataset.dict
     spkr2code = train_dataset.speakers
 
-    norm_path = train_args.data + '/norm_info/norm.dat'
+    norm_path = train_args.data + '/norm_info/norm.dat.npy'
     train_args.noise = 0
 
     model = Loop(train_args)
@@ -110,7 +136,8 @@ def main():
         output_fname = fname + '.gen_' + str(args.spkr)
     elif args.text is not '':
         txt = text2phone(args.text, char2code)
-        feat = torch.FloatTensor(500, 63)
+        #feat = torch.FloatTensor(500, 67)
+        feat = torch.FloatTensor(1500, 67)
         spkr = torch.LongTensor([args.spkr])
 
         txt = Variable(txt.unsqueeze(1), volatile=True)
@@ -136,10 +163,13 @@ def main():
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
+    #'''
     generate_merlin_wav(out.data.cpu().numpy(),
                         output_dir,
                         output_fname,
                         norm_path)
+    #'''
+    #out.data.cpu().numpy().tofile(output_fname)
 
     if args.npz is not '':
         output_orig_fname = os.path.basename(args.npz)[:-4] + '.orig'

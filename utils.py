@@ -153,19 +153,26 @@ def generate_merlin_wav(
         os.mkdir(gen_dir)
 
     file_name = os.path.join(gen_dir, base + ".cmp")
+    '''
     fid = open(norm_info_file, 'rb')
     cmp_info = numpy.fromfile(fid, dtype=numpy.float32)
     fid.close()
+    '''
+    cmp_info = numpy.load(norm_info_file)
     cmp_info = cmp_info.reshape((2, -1))
     cmp_mean = cmp_info[0, ]
     cmp_std = cmp_info[1, ]
+    print(cmp_mean)
+    print(cmp_std)
 
     data = data * cmp_std + cmp_mean
+    print(data[0,])
 
     array_to_binary_file(data, file_name)
     # This code was adapted from Merlin. All licenses apply
 
-    out_dimension_dict = {'bap': 1, 'lf0': 1, 'mgc': 60, 'vuv': 1}
+    out_dimension_dict = {'bap': 5, 'lf0': 1, 'mgc': 60, 'vuv': 1}
+    feature_names = ['mgc','lf0','vuv','bap']
     stream_start_index = {}
     file_extension_dict = {
         'mgc': '.mgc', 'bap': '.bap', 'lf0': '.lf0',
@@ -173,13 +180,13 @@ def generate_merlin_wav(
     gen_wav_features = ['mgc', 'lf0', 'bap']
 
     dimension_index = 0
-    for feature_name in out_dimension_dict.keys():
+    for feature_name in feature_names:
         stream_start_index[feature_name] = dimension_index
         dimension_index += out_dimension_dict[feature_name]
 
     dir_name = os.path.dirname(file_name)
     file_id = os.path.splitext(os.path.basename(file_name))[0]
-    features, frame_number = load_binary_file_frame(file_name, 63)
+    features, frame_number = load_binary_file_frame(file_name, 67)
 
     for feature_name in gen_wav_features:
 
@@ -189,6 +196,10 @@ def generate_merlin_wav(
             out_dimension_dict[feature_name]]
 
         gen_features = current_features
+
+        if feature_name in ['bap']:
+            gen_features = gen_features[:,0]
+            pass
 
         if feature_name in ['lf0', 'F0']:
             if 'vuv' in stream_start_index.keys():
@@ -208,7 +219,8 @@ def generate_merlin_wav(
     fw_alpha = 0.58
     co_coef = 511
 
-    sptkdir = os.path.abspath(os.path.dirname(__file__) + "/tools/SPTK-3.9/") + '/'
+    #sptkdir = os.path.abspath(os.path.dirname(__file__) + "/tools/SPTK-3.9/") + '/'
+    sptkdir = os.path.abspath("/usr/local/SPTK-3.10/bin/") + '/'
     sptk_path = {
         'SOPR': sptkdir + 'sopr',
         'FREQT': sptkdir + 'freqt',
@@ -224,7 +236,8 @@ def generate_merlin_wav(
         'X2X': sptkdir + 'x2x',
         'VSUM': sptkdir + 'vsum'}
 
-    worlddir = os.path.abspath(os.path.dirname(__file__) + "/tools/WORLD/") + '/'
+    #worlddir = os.path.abspath(os.path.dirname(__file__) + "/tools/WORLD/") + '/'
+    worlddir = os.path.abspath("/home/zhyi/merlin/tools/WORLD/build/") + '/'
     world_path = {
         'ANALYSIS': worlddir + 'analysis',
         'SYNTHESIS': worlddir + 'synth'}
@@ -347,6 +360,7 @@ def generate_merlin_wav(
             wav=files['wav']),
         shell=True)
 
+    #'''
     pe(
         'rm -f {ap} {sp} {f0} {bap} {lf0} {mgc} {mgc}_b0 {mgc}_p_b0 '
         '{mgc}_p_mgc {mgc}_p_r0 {mgc}_r0 {cmp} weight'.format(
@@ -354,4 +368,5 @@ def generate_merlin_wav(
             bap=files['bap'], lf0=files['lf0'], mgc=files['mgc'],
             cmp=base + '.cmp'),
         shell=True)
+    #'''
     os.chdir(cur_dir)
