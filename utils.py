@@ -166,7 +166,11 @@ def generate_merlin_wav(
     print(cmp_std)
 
     data = data * cmp_std + cmp_mean
-    print(data[0,])
+    print(data[0,],data.dtype,data.shape)
+    save_sp_fn = os.path.join(gen_dir, "l1.sp")
+    first_c = numpy.zeros(data.shape[0],dtype=data.dtype)
+    save_sp = numpy.c_[first_c,data.reshape((-1,67))]
+    numpy.savetxt(save_sp_fn,save_sp,fmt='%f')
 
     array_to_binary_file(data, file_name)
     # This code was adapted from Merlin. All licenses apply

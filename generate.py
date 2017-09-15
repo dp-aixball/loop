@@ -21,7 +21,7 @@ from utils import generate_merlin_wav
 
 parser = argparse.ArgumentParser(description='PyTorch Phonological Loop \
                                     Generation')
-parser.add_argument('--dict', type=str, required=True, help='code2phone.npz file name')
+parser.add_argument('--dict', type=str, default='',help='code2phone.npz file name')
 parser.add_argument('--npz', type=str, default='',
                     help='Dataset sample to generate.')
 parser.add_argument('--text', default='',
@@ -51,20 +51,31 @@ def text2phone_(text, char2code):
 
     return torch.LongTensor(result)
 
-code2phone = np.load(args.dict)['code2phone']
-char2code_dict = {v : k for k, v in enumerate(code2phone)}
-print(code2phone)
-print(char2code_dict)
+if args.dict != '':
+    code2phone = np.load(args.dict)
+    char2code_dict = {v : k for k, v in enumerate(code2phone)}
+    print(code2phone)
+    print(char2code_dict)
 
 def text2phone(text, char2code):
+    '''
     text = text.replace(' ','|')
     text = text.replace('|',' | ')
     text = text.replace('*',' * ')
     text = text.replace(':',' : ')
+    '''
+    l = text
+    l = l.replace(' SPN ',' ST5 ')
+    l = l.replace('SPN ',' ST5 ')
+    l = l.replace(' SPN','')
+    l = l.replace('*',' ')
+    l = l.replace(':',' : ')
+    text = l
     print(text)
     result = text.split()
     print(result)
     result = [char2code_dict[ph] for ph in result]
+    print(result)
     return torch.LongTensor(result)
 
 def trim_pred(out, attn):
@@ -79,7 +90,7 @@ def trim_pred(out, attn):
     return out, attn
 
 
-def npy_loader_phonemes(path):
+def npy_loader_phonemes_(path):
     npz_code2phone = os.path.dirname(path) + '/../code2phone.npz'
     code2phone = np.load(npz_code2phone)['code2phone']
     dicts = {v: k for k, v in enumerate(code2phone)}
@@ -100,6 +111,16 @@ def npy_loader_phonemes(path):
 
     return txt, audio
 
+def npy_loader_phonemes(path):
+    feat = np.load(path)
+
+    txt = feat['phonemes'].astype('int64')
+    txt = torch.from_numpy(txt)
+
+    audio = feat['audio_features']
+    audio = torch.from_numpy(audio)
+
+    return txt, audio
 
 def main():
     weights = torch.load(args.checkpoint,

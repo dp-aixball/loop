@@ -16,6 +16,12 @@ def getLinear(dim_in, dim_out):
                          nn.ReLU(),
                          nn.Linear(dim_in/10, dim_out))
 
+def getLinear_(dim_in, dim_out):
+    return nn.Sequential(nn.Linear(dim_in, dim_in/10),
+                         nn.ReLU(),
+                         nn.Linear(dim_in/10, dim_in/10),
+                         nn.ReLU(),
+                         nn.Linear(dim_in/10, dim_out))
 
 class MaskedMSE(nn.Module):
     def __init__(self):
