@@ -65,11 +65,27 @@ def text2phone(text, char2code):
     text = text.replace(':',' : ')
     '''
     l = text
+    '''
     l = l.replace(' SPN ',' ST5 ')
     l = l.replace('SPN ',' ST5 ')
     l = l.replace(' SPN','')
     l = l.replace('*',' ')
     l = l.replace(':',' : ')
+    '''
+    #lyc subo
+    l = l.replace('SPN SPN','SPN')
+    lv = l.strip().split()
+    if lv[1] == 'SPN':
+        lv[1] = 'ST5'
+    if lv[-1] == 'SPN':
+        lv[-1] = 'DC5'
+    l = ' '.join(lv)
+    #l = l.replace(' SPN ',' ST5 ')
+    #l = l.replace(' SPN','')
+    l = l.replace('SPN','C5')
+    l = l.replace('*',' ')
+    l = l.replace(':',' : ')
+    #lyc subo
     text = l
     print(text)
     result = text.split()

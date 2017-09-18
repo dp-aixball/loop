@@ -43,7 +43,7 @@ def collate_by_input_length(batch, max_seq_len):
         return torch.LongTensor(batch)
     else:
         new_batch = [x for x in batch if x[1].size(0) < max_seq_len]
-        if len(batch) == 0:
+        if len(new_batch) == 0: #zhyi from "len(batch) == 0"
             return (None, None), (None, None), None
 
         batch = new_batch

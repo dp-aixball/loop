@@ -100,6 +100,8 @@ def train(model, criterion, optimizer, epoch, train_losses):
     train_enum = tqdm(train_loader, desc='Train epoch %d' % epoch)
 
     for full_txt, full_feat, spkr in train_enum:
+        if full_txt[0] is None: #add by zhyi
+            continue
         batch_iter = TBPTTIter(full_txt, full_feat, spkr, args.seq_len)
         batch_total = 0
 
