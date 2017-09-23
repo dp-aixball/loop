@@ -1,0 +1,5 @@
+expName=lyc
+python train.py --expName ${expName}_noise_4 --data /media/zhyi/RAID/Corpus/TTS/lyc --noise 4 --seq-len 100 --epochs 90 --batch-size 64 --nspk 20  --attention-alignment 0.05 --vocabulary-size 210 --gpu 1 --max-seq-len 1000
+python train.py --expName ${expName}_noise_2 --data /media/zhyi/RAID/Corpus/TTS/lyc --checkpoint checkpoints/${expName}_noise_4/bestmodel.pth --noise 2 --seq-len 500 --epochs 90 --batch-size 64 --nspk 20  --attention-alignment 0.05 --vocabulary-size 210 --gpu 1 --max-seq-len 1000
+python train.py --expName ${expName}_noise_1 --data /media/zhyi/RAID/Corpus/TTS/lyc --checkpoint checkpoints/${expName}_noise_2/bestmodel.pth --noise 1 --seq-len 1000 --epochs 90 --batch-size 64 --nspk 20  --attention-alignment 0.05 --vocabulary-size 210 --gpu 1 --max-seq-len 1000
+python train.py --expName ${expName}_noise_0 --data /media/zhyi/RAID/Corpus/TTS/lyc --checkpoint checkpoints/${expName}_noise_1/bestmodel.pth --noise 0 --seq-len 1000 --epochs 90 --batch-size 64 --nspk 20  --attention-alignment 0.05 --vocabulary-size 210 --gpu 1 --max-seq-len 1000

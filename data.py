@@ -1,4 +1,5 @@
-# Copyright 2017-present, Facebook, Inc.
+#! coding=utf-8
+#  Copyright 2017-present, Facebook, Inc.
 # All rights reserved.
 #
 # This source code is licensed under the license found in the
@@ -160,10 +161,13 @@ class TBPTTIter(object):
         self.srcBatch = src[0]
         self.srcLenths = src[1]
 
-        # split batch
+        # split tgt batch by self.seq_len
         self.tgtBatch = list(torch.split(trgt[0], self.seq_len, 0))
         self.tgtBatch.reverse()
         self.len = len(self.tgtBatch)
+
+        # split src batch by segments count average
+
 
         # split length list
         batch_seq_len = len(self.tgtBatch)
@@ -175,6 +179,7 @@ class TBPTTIter(object):
 
         assert len(self.tgtLenths) == len(self.tgtBatch)
 
+    #总长为seq_size，段长为self.seq_len
     def split_length(self, seq_size, batch_seq_len):
         seq = [self.seq_len] * (seq_size / self.seq_len)
         if seq_size % self.seq_len != 0:
